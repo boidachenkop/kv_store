@@ -26,6 +26,8 @@ add_executable(kv_store
   "src/common.hh"
   "src/backup.cc"
   "src/backup.hh"
+  "src/data_store.cc"
+  "src/data_store.hh"
 )
 
 target_include_directories(kv_store

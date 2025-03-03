@@ -17,30 +17,35 @@ future<service_response> dispatcher::dispatch(service_request&& service_req) {
 
     auto shard_id = (hash % n) + 1;
     fmt::print("dispatcher: dispatching key [{}] to shard {}\n", key, shard_id);
-    return _shards_requests.at(shard_id).writer.write(std::move(service_req)).then([&, shard_id] {
-        return _shards_responses.at(shard_id).reader.read().then([&](std::optional<kv_store::service_response> response) {
+    return _shards_requests.at(shard_id)->writer.write(std::move(service_req)).then([&, shard_id] {
+        return _shards_responses.at(shard_id)->reader.read().then([](std::optional<kv_store::service_response> response) {
             if (response) {
                 return make_ready_future<service_response>(*response);
             }
-            return make_ready_future<service_response>(false, std::nullopt, service_req._op);
+            return make_ready_future<service_response>(false, std::nullopt, operation::UNKNOWN);
         });
     });
 }
 
-pipe_reader<service_request>&& dispatcher::get_request_reader(shard_id shard) {
-    return std::move(_shards_requests.at(shard).reader);
+std::shared_ptr<seastar::pipe<service_request>> dispatcher::get_request_pipe(shard_id shard) {
+    return _shards_requests.at(shard);
 }
 
-pipe_writer<service_response>&& dispatcher::get_response_writer(shard_id shard) {
-    return std::move(_shards_responses.at(shard).writer);
+std::shared_ptr<seastar::pipe<service_response>> dispatcher::get_response_pipe(shard_id shard) {
+    return _shards_responses.at(shard);
 }
 
 void dispatcher::add(seastar::shard_id id) {
     if (_shards_requests.find(id) != _shards_requests.end()) {
         return;
     }
-    _shards_requests.emplace(id, seastar::pipe<service_request>(1)); // pipe cache size 1 is ok?
-    _shards_responses.emplace(id, seastar::pipe<service_response>(1));
+    _shards_requests.emplace(id, std::make_shared<seastar::pipe<service_request>>(10)); // TODO: deside if 10 is ok
+    _shards_responses.emplace(id, std::make_shared<seastar::pipe<service_response>>(10));
+}
+
+std::unique_ptr<dispatcher> create_dispatcher()
+{
+    return std::make_unique<dispatcher>();
 }
 
 

@@ -25,7 +25,7 @@ future<bool> cache::insert(const payload& payload) {
         status = true;
     } else {
         _list.push_back(payload._key);
-        status = _storage.emplace(_list.back(), std::pair<ListIterator, std::string>(_list.end(), payload._value)).second;
+        status = _storage.emplace(_list.back(), std::pair<ListIterator, std::string>(std::prev(_list.end()), payload._value)).second;
     }
     return make_ready_future<bool>(status);
 }
@@ -50,10 +50,9 @@ future<bool> cache::remove(const std::string& key) {
 
 void cache::updateKey(const std::string& key, const std::optional<std::string>& value /*= std::nullopt*/) {
     if (_storage.contains(key)) {
-        _list.erase(std::find(_list.begin(), _list.end(), key)); // O(n) performanse killer?
+        _list.erase(_storage[key].first);
         _list.push_back(key);
-        auto& itemIter = _storage.at(key);
-        itemIter = std::make_pair(_list.end(), value ? *value : itemIter.second);
+        _storage[key] = std::make_pair(std::prev(_list.end()), value.value_or(_storage[key].second));
     }
 }
 } // namespace kv_store
