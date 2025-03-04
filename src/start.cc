@@ -1,7 +1,6 @@
 #include "request_handlers.hh"
 #include "service.hh"
 #include "dispatcher.hh"
-#include "data_store.hh"
 
 #include <seastar/core/future.hh>
 #include <seastar/http/httpd.hh>

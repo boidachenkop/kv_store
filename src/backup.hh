@@ -1,5 +1,4 @@
 #pragma once
-#include "data_store.hh"
 
 #include <seastar/core/reactor.hh>
 #include <seastar/core/future.hh>
@@ -8,14 +7,14 @@
 namespace kv_store {
 class payload;
 
-class backuper : public data_storage{
+class backuper {
 public:
     backuper(seastar::shard_id shard);
     ~backuper();
 
-    seastar::future<bool> insert(const payload& payload) override;
-    seastar::future<std::optional<payload>> get(const std::string& key) override;
-    seastar::future<bool> remove(const std::string& key) override;
+    seastar::future<bool> insert(const payload& payload);
+    seastar::future<std::optional<payload>> get(const std::string& key);
+    seastar::future<bool> remove(const std::string& key);
 
     seastar::future<std::map<std::string, std::string>> get_all();
 private:

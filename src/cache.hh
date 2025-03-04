@@ -1,6 +1,5 @@
 #pragma once
 #include "common.hh"
-#include "data_store.hh"
 
 #include <seastar/core/pipe.hh>
 #include <seastar/core/future.hh>
@@ -11,13 +10,14 @@
 
 namespace kv_store {
 
-class cache : public data_storage{
-  using ListIterator = std::list<std::string>::const_iterator;
+class cache {
+    using ListIterator = std::list<std::string>::const_iterator;
+
 public:
     cache(size_t max_size);
-    seastar::future<bool> insert(const payload& payload) override;
-    seastar::future<std::optional<payload>> get(const std::string& key) override;
-    seastar::future<bool> remove(const std::string& key) override;
+    seastar::future<bool> insert(const payload& payload);
+    seastar::future<std::optional<payload>> get(const std::string& key);
+    seastar::future<bool> remove(const std::string& key);
 
 private:
     void updateKey(const std::string& key, const std::optional<std::string>& value = std::nullopt);
