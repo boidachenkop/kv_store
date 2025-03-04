@@ -17,6 +17,7 @@ public:
     seastar::future<bool> remove(const std::string& key);
 
     seastar::future<std::map<std::string, std::string>> get_all();
+
 private:
     void compact();
     void build_index();

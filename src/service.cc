@@ -103,11 +103,9 @@ seastar::future<service_response> service::process(service_request&& request) {
         fmt::print("service: processing GET_ALL request\n");
 
         return do_with(std::move(request), [&](service_request& request) {
-            return _backup->get_all().then([](auto&& all)
-            {
+            return _backup->get_all().then([](auto&& all) {
                 return make_ready_future<service_response>(true, std::nullopt, std::move(all), operation::GET_ALL);
             });
-
         });
     }
     return make_ready_future<service_response>(false, std::nullopt, std::nullopt, operation::UNKNOWN);

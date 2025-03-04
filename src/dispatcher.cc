@@ -29,16 +29,12 @@ future<service_response> dispatcher::dispatch(service_request&& service_req) {
 
 future<std::map<std::string, std::string>> dispatcher::to_all(service_request service_req) {
     std::map<std::string, std::string> result;
-    for(auto [shard, request_pipe] : _shards_requests)
-    {
+    for (auto [shard, request_pipe] : _shards_requests) {
         co_await request_pipe->writer.write(std::move(service_request(service_req)));
-    } 
-    for(auto [shard, response_pipe] : _shards_responses )
-    {
-        if(auto response = co_await response_pipe->reader.read())
-        {
-            if(auto& sorted_pairs = response->_sorted)
-            {
+    }
+    for (auto [shard, response_pipe] : _shards_responses) {
+        if (auto response = co_await response_pipe->reader.read()) {
+            if (auto& sorted_pairs = response->_sorted) {
                 result.insert(sorted_pairs->begin(), sorted_pairs->end());
             }
         }
@@ -62,8 +58,7 @@ void dispatcher::add(seastar::shard_id id) {
     _shards_responses.emplace(id, std::make_shared<seastar::pipe<service_response>>(10));
 }
 
-std::unique_ptr<dispatcher> create_dispatcher()
-{
+std::unique_ptr<dispatcher> create_dispatcher() {
     return std::make_unique<dispatcher>();
 }
 
