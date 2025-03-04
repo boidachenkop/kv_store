@@ -12,6 +12,7 @@ class dispatcher {
 
 public:
     seastar::future<service_response> dispatch(service_request&& service_req);
+    seastar::future<std::map<std::string, std::string>> to_all(service_request service_req);
 
     std::shared_ptr<seastar::pipe<service_request>> get_request_pipe(seastar::shard_id shard);
     std::shared_ptr<seastar::pipe<service_response>> get_response_pipe(seastar::shard_id shard);

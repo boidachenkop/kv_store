@@ -2,10 +2,11 @@
 
 #include <string>
 #include <optional>
+#include <map>
 
 namespace kv_store {
 
-enum class operation { UNKNOWN, INSERT, GET, REMOVE };
+enum class operation { UNKNOWN, INSERT, GET, REMOVE, GET_ALL };
 
 class payload {
 public:
@@ -26,6 +27,7 @@ public:
 struct service_response {
   bool _status;
   std::optional<payload> _payload;
+  std::optional<std::map<std::string, std::string>> _sorted;
   operation _op;
 };
 

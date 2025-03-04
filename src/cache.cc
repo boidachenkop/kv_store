@@ -20,7 +20,6 @@ future<bool> cache::insert(const payload& payload) {
     }
     bool status = false;
     if (_storage.contains(payload._key)) {
-        // update key
         updateKey(payload._key, payload._value);
         status = true;
     } else {

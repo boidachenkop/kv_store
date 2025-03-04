@@ -13,7 +13,7 @@ payload::payload() {
 
 payload::payload(const std::string& key, const std::string& value) {
     _key.reserve(255);
-    _key = key; // TODO: avoid copy? mb use seastar buffer
+    _key = key;
     _value = value;
 }
 } // namespace kv_store

@@ -22,9 +22,28 @@ future<service_response> dispatcher::dispatch(service_request&& service_req) {
             if (response) {
                 return make_ready_future<service_response>(*response);
             }
-            return make_ready_future<service_response>(false, std::nullopt, operation::UNKNOWN);
+            return make_ready_future<service_response>(false, std::nullopt, std::nullopt, operation::UNKNOWN);
         });
     });
+}
+
+future<std::map<std::string, std::string>> dispatcher::to_all(service_request service_req) {
+    std::map<std::string, std::string> result;
+    for(auto [shard, request_pipe] : _shards_requests)
+    {
+        co_await request_pipe->writer.write(std::move(service_request(service_req)));
+    } 
+    for(auto [shard, response_pipe] : _shards_responses )
+    {
+        if(auto response = co_await response_pipe->reader.read())
+        {
+            if(auto& sorted_pairs = response->_sorted)
+            {
+                result.insert(sorted_pairs->begin(), sorted_pairs->end());
+            }
+        }
+    }
+    co_return result;
 }
 
 std::shared_ptr<seastar::pipe<service_request>> dispatcher::get_request_pipe(shard_id shard) {

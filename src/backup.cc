@@ -90,8 +90,33 @@ future<bool> backuper::remove(const std::string& key) {
     out.write(reinterpret_cast<const char*>(&_delete_marker), sizeof(_delete_marker));
 
     _index.erase(key);
-    _deleted[key] = true;
     return make_ready_future<bool>(true);
+}
+
+future<std::map<std::string, std::string>> backuper::get_all() {
+    std::map<std::string, std::string> result;
+    std::ifstream in(_db_filename, std::ios::binary);
+    while (in) {
+        uint32_t key_len, value_len, status;
+        std::streampos pos = in.tellg();
+
+        in.read(reinterpret_cast<char*>(&key_len), sizeof(key_len));
+        if (in.eof())
+            break;
+        std::string key(key_len, '\0');
+        in.read(&key[0], key_len);
+        in.read(reinterpret_cast<char*>(&status), sizeof(status));
+        in.read(reinterpret_cast<char*>(&value_len), sizeof(value_len));
+        if (status == _delete_marker) {
+            in.seekg(value_len, std::ios::cur);
+            continue;
+        }
+
+        std::string value(value_len, '\0');
+        in.read(&value[0], value_len);
+        result.emplace(key, value);
+    }
+    return make_ready_future<std::map<std::string, std::string>>(std::move(result));
 }
 
 void backuper::build_index() {
@@ -111,18 +136,18 @@ void backuper::build_index() {
         std::streampos pos = in.tellg();
 
         in.read(reinterpret_cast<char*>(&status), sizeof(status));
-
         in.read(reinterpret_cast<char*>(&value_len), sizeof(value_len));
+        if (status == _delete_marker) {
+            in.seekg(value_len, std::ios::cur);
+            continue;
+        }
+
         std::string value(value_len, '\0');
         in.read(&value[0], value_len);
 
-        if (status == _delete_marker) {
-            _deleted[key] = true;
-        } else {
-            _index[key] = pos;
-        }
+        _index[key] = pos;
     }
-    fmt::print("backuper: finished building index: a: {} r: {}\n", _index.size(), _deleted.size());
+    fmt::print("backuper: finished building index, total: {}\n", _index.size());
 }
 
 void backuper::compact() {
@@ -149,7 +174,7 @@ void backuper::compact() {
         in.read(&key[0], key_len);
         in.read(reinterpret_cast<char*>(&status), sizeof(status));
         in.read(reinterpret_cast<char*>(&value_len), sizeof(value_len));
-        if (status == _delete_marker || _deleted.contains(key)) {
+        if (status == _delete_marker) {
             in.seekg(value_len, std::ios::cur);
             continue;
         }

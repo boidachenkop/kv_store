@@ -13,6 +13,9 @@ seastar::future<std::unique_ptr<seastar::http::reply>> handle_post_item(
 seastar::future<std::unique_ptr<seastar::http::reply>> handle_get_item(
         kv_store::dispatcher* dispatcher, std::unique_ptr<seastar::http::request> req, std::unique_ptr<seastar::http::reply> rep);
 
+seastar::future<std::unique_ptr<seastar::http::reply>> handle_get_items(
+        kv_store::dispatcher* dispatcher, std::unique_ptr<seastar::http::request> req, std::unique_ptr<seastar::http::reply> rep);
+
 seastar::future<std::unique_ptr<seastar::http::reply>> handle_delete_item(
         kv_store::dispatcher* dispatcher, std::unique_ptr<seastar::http::request> req, std::unique_ptr<seastar::http::reply> rep);
 

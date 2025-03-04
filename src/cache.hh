@@ -23,7 +23,7 @@ private:
     void updateKey(const std::string& key, const std::optional<std::string>& value = std::nullopt);
 
     size_t _capacity;
-    std::list<std::string> _list; // for order tracking, TODO: change to ordered set?
+    std::list<std::string> _list; // for order tracking
     // key - (list iter - value)
     std::unordered_map<std::string, std::pair<ListIterator, std::string>> _storage;
 };
