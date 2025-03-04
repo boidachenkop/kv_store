@@ -1,0 +1,26 @@
+
+1. Server closing sequence results in exception from seastar and can be generally improved,
+ I wasn't able to to figure out how to close service since it hangs on reading from pipe.
+ I'd read more about guards, iirc this is the way for proper service closing.
+2. I'm not sure if doing invoke_on_other for pre-initializing objects is a good way to go, I'd read more about it and improve if needed.
+3. File write could be done using seastar, I've tried to do it but figured that it would take a lot of time to do DMA write/read right,
+ also it requires to plan ahead how this will be used(which I didn't because I didn't know about this).
+4. service::process could utilize visitor pattern(or variant) to have cleaner request processing code, 
+also adding new request type would not require existing code modification.
+5. Serializing in some sorted format so sorting is not required when retrieving data, I'd need to read how for example databases do that.
+6. Configuring using boost options for cache and port at least.
+7. REST api should return and request items in json format so keys and values kan be easily distinguished.
+8. Use coroutines instead of continuations where possible. Coroutines is new concept for me so it rarely occurred to me that 
+they can be used to solve something I was trying to solve. Continuations have ton of examples in seastar docs and tutorials on the other hand.
+9. In general code is not production ready it needs more thought in structure and minor things like objects lifetime and lambda captures.
+10. Using proper logging system instead of fmt::print, I saw seastar offers one.
+11. Code repetitions should be generalized in: backup.cc, request_handlers.cc
+12. http return code should return meaningful values, server internal error in case of exceptions, 404 if item is not found.
+13. Unit tests, better integration tests.
+14. I think http_server and service should both run on all cores for optimal performance, I'm not sure if current implementation can easily do that
+by just executing http_server on all shards because then dispatcher can write to same pipe from two shards (?and read unexpected results?)
+15. Bad performance if keys are not evenly distributed by dispatcher(e.g. all keys start from "aa"), if we have more information about keys this can be mitigated by changing dispatch logic.
+16. handle_service_communication - unify handling of GET_ALL and other operations
+17. backuper::compact could be done periodically to safe space, not just on service start.
+18. kv_store::cache could store only one instance of key instead of duplicating it in _list
+19. I'd read more about pipes and see how for example ScyllaDB uses them, not sure I'm using them in optimal way and to which size pipe buffer should be set.
