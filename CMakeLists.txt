@@ -4,9 +4,6 @@ project (KvStore)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/seastar/build/release;$seastar_dir/build/release/_cooking/installed")
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/seastar/cmake")
-
 find_package (Seastar REQUIRED)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
